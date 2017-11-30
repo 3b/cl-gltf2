@@ -7,6 +7,10 @@
    (%type :reader %chunk-type)
    (%data :reader chunk-data)))
 
+(defclass json-chunk-data ()
+  ((%lisp :accessor json->lisp)
+   (%clos :accessor json->clos)))
+
 (defmethod print-object ((object chunk) stream)
   (print-unreadable-object (object stream :type t)
     (let ((*chunk* object))
@@ -35,14 +39,18 @@
       (call-next-method))))
 
 (defmethod parse-chunk-data ((chunk-type (eql :json-content)))
-  (let ((data (read-string :encoding :utf-8))
-        (json:*json-symbols-package* nil))
+  (let* ((data (read-string :encoding :utf-8))
+         (json:*json-symbols-package* nil)
+         (lisp (json:decode-json-from-string data))
+         (json (make-instance 'json-chunk-data)))
     (json:with-decoder-simple-clos-semantics
-      (setf (json *object*) (json:decode-json-from-string data)))
+      (setf (json *object*) json
+            (json->lisp json) lisp
+            (json->clos json) (json:decode-json-from-string data)))
     data))
 
 (defmethod parse-chunk-data ((chunk-type (eql :binary-buffer)))
-  (read-bytes (chunk-length *chunk*)))
+  (warn "Skipping over binary data."))
 
 (defmethod parse-chunk-data ((chunk-type (eql :unknown)))
   (warn "Ignoring an unknown chunk type."))
