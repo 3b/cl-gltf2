@@ -21,13 +21,9 @@
                     %length (read-uint-le 4))))))
     header))
 
-(defun end-of-stream-p ()
-  (let ((stream (buffer-stream)))
-    (= (file-position stream)
-       (file-length stream))))
-
 (defun parse-chunks ()
-  (loop :until (end-of-stream-p)
+  (loop :with stream = (buffer-stream)
+        :until (= (file-position stream) (file-length stream))
         :for chunk = (parse-chunk)
         :collect chunk))
 
