@@ -35,7 +35,11 @@
       (call-next-method))))
 
 (defmethod parse-chunk-data ((chunk-type (eql :json-content)))
-  (read-string :encoding :utf-8))
+  (let ((data (read-string :encoding :utf-8))
+        (json:*json-symbols-package* nil))
+    (json:with-decoder-simple-clos-semantics
+      (setf (json *object*) (json:decode-json-from-string data)))
+    data))
 
 (defmethod parse-chunk-data ((chunk-type (eql :binary-buffer)))
   (read-bytes (chunk-length *chunk*)))

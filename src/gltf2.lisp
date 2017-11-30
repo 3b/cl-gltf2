@@ -2,10 +2,9 @@
 
 (defvar *object*)
 
-(deftype ub8 () '(unsigned-byte 8))
-
 (defclass gltf2 ()
-  ((parse-tree :accessor parse-tree)))
+  ((parse-tree :accessor parse-tree)
+   (json :accessor json)))
 
 (defun load-stream (stream)
   (with-buffer-read (:stream stream)
@@ -14,5 +13,5 @@
       *object*)))
 
 (defun load-file (path)
-  (with-open-file (in path :element-type 'ub8)
+  (with-open-file (in path :element-type '(unsigned-byte 8))
     (load-stream in)))
